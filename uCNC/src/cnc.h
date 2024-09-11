@@ -72,21 +72,21 @@ extern "C"
  *
  */
 // current cnc states (multiple can be active/overlapped at the same time)
-#define EXEC_IDLE 0																						 // All flags cleared
-#define EXEC_RUN 1																						 // Motions are being executed
-#define EXEC_HOLD 2																						 // Feed hold is active
-#define EXEC_JOG 4																						 // Jogging in execution
-#define EXEC_HOMING 8																					 // Homing in execution
-#define EXEC_DOOR 16																					 // Safety door open
-#define EXEC_UNHOMED 32																				 // Machine is not homed or lost position due to abrupt stop
-#define EXEC_LIMITS 64																				 // Limits hit
-#define EXEC_KILL 128																					 // Emergency stop
-#define EXEC_HOMING_HIT (EXEC_HOMING | EXEC_LIMITS)						 // Limit switch is active during a homing motion
-#define EXEC_INTERLOCKING_FAIL (EXEC_LIMITS | EXEC_KILL)			 // Interlocking check failed
-#define EXEC_ALARM (EXEC_UNHOMED | EXEC_INTERLOCKING_FAIL)		 // System alarms
+#define EXEC_IDLE 0											   // All flags cleared
+#define EXEC_RUN 1											   // Motions are being executed
+#define EXEC_HOLD 2											   // Feed hold is active
+#define EXEC_JOG 4											   // Jogging in execution
+#define EXEC_HOMING 8										   // Homing in execution
+#define EXEC_DOOR 16										   // Safety door open
+#define EXEC_UNHOMED 32										   // Machine is not homed or lost position due to abrupt stop
+#define EXEC_LIMITS 64										   // Limits hit
+#define EXEC_KILL 128										   // Emergency stop
+#define EXEC_HOMING_HIT (EXEC_HOMING | EXEC_LIMITS)			   // Limit switch is active during a homing motion
+#define EXEC_INTERLOCKING_FAIL (EXEC_LIMITS | EXEC_KILL)	   // Interlocking check failed
+#define EXEC_ALARM (EXEC_UNHOMED | EXEC_INTERLOCKING_FAIL)	   // System alarms
 #define EXEC_RESET_LOCKED (EXEC_ALARM | EXEC_DOOR | EXEC_HOLD) // System reset locked
-#define EXEC_GCODE_LOCKED (EXEC_ALARM | EXEC_DOOR | EXEC_JOG)	 // Gcode is locked by an alarm or any special motion state
-#define EXEC_ALLACTIVE 255																		 // All states
+#define EXEC_GCODE_LOCKED (EXEC_ALARM | EXEC_DOOR | EXEC_JOG)  // Gcode is locked by an alarm or any special motion state
+#define EXEC_ALLACTIVE 255									   // All states
 
 // creates a set of helper masks used to configure the controller
 #define ESTOP_MASK 1
@@ -154,9 +154,8 @@ extern "C"
 #include <stdint.h>
 
 	extern bool cnc_status_report_lock;
-
-	void cnc_init(void);
-	void cnc_run(void);
+	void ucnc_init(void);
+	void ucnc_run(void);
 	// do events returns true if all OK and false if an ABORT alarm is reached
 	bool cnc_dotasks(void);
 	void cnc_home(void);
@@ -192,13 +191,6 @@ extern "C"
 	DECL_EVENT_HANDLER(cnc_parse_cmd_error);
 	// event_cnc_alarm
 	DECL_EVENT_HANDLER(cnc_alarm);
-#endif
-
-#ifndef ucnc_init
-#define ucnc_init cnc_init
-#endif
-#ifndef ucnc_run
-#define ucnc_run cnc_run
 #endif
 
 #ifdef __cplusplus

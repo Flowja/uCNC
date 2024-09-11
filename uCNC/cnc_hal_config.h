@@ -53,15 +53,15 @@ extern "C"
 
 // Uncomment to enable weak pull up resistors for limit switch
 // If the pin is not defined in the board this will be ignored
-#define LIMIT_X_PULLUP_ENABLE
-#define LIMIT_Y_PULLUP_ENABLE
-#define LIMIT_Z_PULLUP_ENABLE
-#define LIMIT_X2_PULLUP_ENABLE
-#define LIMIT_Y2_PULLUP_ENABLE
-#define LIMIT_Z2_PULLUP_ENABLE
-#define LIMIT_A_PULLUP_ENABLE
-#define LIMIT_B_PULLUP_ENABLE
-#define LIMIT_C_PULLUP_ENABLE
+// #define LIMIT_X_PULLUP_ENABLE
+// #define LIMIT_Y_PULLUP_ENABLE
+// #define LIMIT_Z_PULLUP_ENABLE
+// #define LIMIT_X2_PULLUP_ENABLE
+// #define LIMIT_Y2_PULLUP_ENABLE
+// #define LIMIT_Z2_PULLUP_ENABLE
+// #define LIMIT_A_PULLUP_ENABLE
+// #define LIMIT_B_PULLUP_ENABLE
+// #define LIMIT_C_PULLUP_ENABLE
 
 // Uncomment to enable weak pull up resistor for probe
 // If the pin is not defined in the board this will be ignored
@@ -69,10 +69,10 @@ extern "C"
 
 // Uncomment to enable weak pull up resistors for control pins
 // If the pin is not defined in the board this will be ignored
-#define ESTOP_PULLUP_ENABLE
-#define SAFETY_DOOR_PULLUP_ENABLE
-#define FHOLD_PULLUP_ENABLE
-#define CS_RES_PULLUP_ENABLE
+// #define ESTOP_PULLUP_ENABLE
+// #define SAFETY_DOOR_PULLUP_ENABLE
+// #define FHOLD_PULLUP_ENABLE
+// #define CS_RES_PULLUP_ENABLE
 
 /**
  * Uncomment this to use Y axis as a Z axis alias on 2 axis machines

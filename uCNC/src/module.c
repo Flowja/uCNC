@@ -22,6 +22,7 @@
 #include "modules/digipot.h"
 #include "modules/encoder.h"
 #include "modules/pid.h"
+#include "modules/endpoint.h"
 #include "modules/ic74hc595.h"
 #include "modules/modbus.h"
 #include "modules/softi2c.h"
@@ -29,9 +30,7 @@
 #include "modules/softuart.h"
 #include "modules/system_languages.h"
 #include "modules/system_menu.h"
-#include "modules/file_system.h"
 
-uint8_t g_module_lockguard;
 /**
  *
  * this is the place to declare all parser extension registration calls
@@ -44,11 +43,17 @@ static FORCEINLINE void load_modules(void)
 #ifdef LOAD_MODULES_OVERRIDE
 	LOAD_MODULES_OVERRIDE();
 #endif
+	LOAD_MODULE(sensor_amps);
+	LOAD_MODULE(sensor_temperature);
+	LOAD_MODULE(grblhal_keypad);
+	LOAD_MODULE(m42);
+	LOAD_MODULE(button_light);
+
+	// LOAD_MODULE(tone_speaker);
 }
 
 void mod_init(void)
 {
-	g_module_lockguard = 0;
 #ifdef ENABLE_DIGITAL_MSTEP
 	LOAD_MODULE(digimstep);
 #endif
@@ -69,38 +74,5 @@ void mod_init(void)
 	LOAD_MODULE(plasma_thc);
 #endif
 
-#ifdef BOARD_HAS_CUSTOM_SYSTEM_COMMANDS
-	// file system commands
-	LOAD_MODULE(file_system);
-#endif
-
 	load_modules();
 }
-
-#ifdef MODULE_DEBUG_ENABLED
-bool mod_event_default_handler(mod_delegate_event_t **event, mod_delegate_event_t **last, void **args)
-{
-	mod_delegate_event_t *ptr = *last;
-	if (!ptr)
-	{
-		ptr = *event;
-	}
-	while (ptr != NULL)
-	{
-		*last = ptr->next;
-		if (ptr->fptr != NULL && !CHECKFLAG(ptr->fplock, (g_module_lockguard | LISTENER_RUNNING_LOCK)))
-		{
-			SETFLAG(ptr->fplock, LISTENER_RUNNING_LOCK);
-			if (ptr->fptr(*args))
-			{
-				CLEARFLAG(ptr->fplock, LISTENER_RUNNING_LOCK);
-				*last = *event; /*handled. restart.*/
-				return EVENT_HANDLED;
-			}
-			CLEARFLAG(ptr->fplock, LISTENER_RUNNING_LOCK);
-		}
-		ptr = ptr->next;
-	}
-	return EVENT_CONTINUE;
-}
-#endif

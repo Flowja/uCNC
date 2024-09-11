@@ -47,7 +47,7 @@ typedef struct
 	volatile int8_t alarm;
 } cnc_state_t;
 
-static uint8_t cnc_lock_itp;
+static bool cnc_lock_itp = false;
 static cnc_state_t cnc_state;
 bool cnc_status_report_lock;
 
@@ -102,7 +102,7 @@ WEAK_EVENT_HANDLER(cnc_alarm)
 }
 #endif
 
-void cnc_init(void)
+void ucnc_init(void)
 {
 	// initializes cnc state
 #ifdef FORCE_GLOBALS_TO_0
@@ -111,21 +111,20 @@ void cnc_init(void)
 #endif
 	cnc_state.loop_state = LOOP_STARTUP_RESET;
 	// initializes all systems
-	mcu_init();																					// mcu
-	mcu_io_reset();																			// add custom logic to set pins initial state
+	mcu_init();											// mcu
 	io_enable_steppers(~g_settings.step_enable_invert); // disables steppers at start
-	io_disable_probe();																	// forces probe isr disabling
-	serial_init();																			// serial
-	mod_init();																					// modules
-	settings_init();																		// settings
-	itp_init();																					// interpolator
-	planner_init();																			// motion planner
+	io_disable_probe();									// forces probe isr disabling
+	serial_init();										// serial
+	mod_init();											// modules
+	settings_init();									// settings
+	itp_init();											// interpolator
+	planner_init();										// motion planner
 #if TOOL_COUNT > 0
 	tool_init();
 #endif
 }
 
-void cnc_run(void)
+void ucnc_run(void)
 {
 	// enters loop reset
 	cnc_reset();
@@ -212,9 +211,6 @@ uint8_t cnc_parse_cmd(void)
 #endif
 			break;
 		}
-		// runs any rt command in queue
-		// this catches for example a ?\n situation sent by some GUI like UGS
-		cnc_exec_rt_commands();
 		if (!error)
 		{
 			protocol_send_ok();
@@ -236,7 +232,6 @@ uint8_t cnc_parse_cmd(void)
 
 bool cnc_dotasks(void)
 {
-
 	// run io basic tasks
 	cnc_io_dotasks();
 
@@ -248,8 +243,13 @@ bool cnc_dotasks(void)
 		return false;
 	}
 
+	if (cnc_has_alarm())
+	{
+		return !cnc_get_exec_state(EXEC_KILL);
+	}
+
 	// µCNC already in error loop. No point in sending the alarms
-	if (cnc_has_alarm() || (cnc_state.loop_state >= LOOP_FAULT))
+	if (cnc_state.loop_state >= LOOP_FAULT)
 	{
 		return !cnc_get_exec_state(EXEC_KILL);
 	}
@@ -260,19 +260,17 @@ bool cnc_dotasks(void)
 		return !cnc_get_exec_state(EXEC_INTERLOCKING_FAIL);
 	}
 
-#ifndef ENABLE_ITP_FEED_TASK
+#ifdef ENABLE_TOOL_PID_CONTROLLER
+	// run the tool pid update
+	tool_pid_update();
+#endif
+
 	if (!cnc_lock_itp)
 	{
 		cnc_lock_itp = true;
 		itp_run();
 		cnc_lock_itp = false;
 	}
-#endif
-
-#ifdef ENABLE_TOOL_PID_CONTROLLER
-	// run the tool pid update
-	tool_pid_update();
-#endif
 
 #ifdef ENABLE_MAIN_LOOP_MODULES
 	EVENT_INVOKE(cnc_dotasks, NULL);
@@ -307,7 +305,7 @@ void cnc_store_motion(void)
 		cnc_clear_exec_state(EXEC_HOLD);
 	}
 
-	cnc_lock_itp = 0;
+	cnc_lock_itp = false;
 #endif
 }
 
@@ -340,7 +338,7 @@ void cnc_restore_motion(void)
 	{
 		cnc_clear_exec_state(EXEC_HOLD);
 	}
-	cnc_lock_itp = 0;
+	cnc_lock_itp = false;
 #endif
 }
 
@@ -348,54 +346,39 @@ void cnc_restore_motion(void)
 #ifndef DISABLE_RTC_CODE
 MCU_CALLBACK void mcu_rtc_cb(uint32_t millis)
 {
-	mcu_enable_global_isr();
-	uint8_t mls = (uint8_t)(0xff & millis);
-	if ((mls & CTRL_SCHED_CHECK_MASK) == CTRL_SCHED_CHECK_VAL)
-	{
-#ifndef ENABLE_RT_PROBE_CHECKING
-		mcu_probe_changed_cb();
-#endif
-#ifndef ENABLE_RT_LIMITS_CHECKING
-		mcu_limits_changed_cb();
-#endif
-		mcu_controls_changed_cb();
-#if (DIN_ONCHANGE_MASK != 0 && ENCODERS < 1)
-		// extra call in case generic inputs are running with ISR disabled. Encoders need propper ISR to work.
-		mcu_inputs_changed_cb();
-#endif
-	}
+	static bool running = false;
 
-#ifdef ENABLE_ITP_FEED_TASK
-	static uint8_t itp_feed_counter = (uint8_t)CLAMP(1, (1000 / INTERPOLATOR_FREQ), 255);
-	mls = itp_feed_counter;
-	if (!cnc_lock_itp && !mls--)
+	if (!running)
 	{
-		cnc_lock_itp = 1;
-		if ((cnc_state.loop_state == LOOP_RUNNING) && (cnc_state.alarm == EXEC_ALARM_NOALARM) && !cnc_get_exec_state(EXEC_INTERLOCKING_FAIL))
-		{
-			itp_run();
-		}
-		mls = (uint8_t)CLAMP(1, (1000 / INTERPOLATOR_FREQ), 255);
-		cnc_lock_itp = 0;
-	}
-
-	itp_feed_counter = mls;
-#endif
+		running = true;
+		mcu_enable_global_isr();
 
 #ifdef ENABLE_MAIN_LOOP_MODULES
-	if (!cnc_get_exec_state(EXEC_ALARM))
-	{
-		EVENT_INVOKE(rtc_tick, NULL);
-	}
+		if (!cnc_get_exec_state(EXEC_ALARM))
+		{
+			EVENT_INVOKE(rtc_tick, NULL);
+		}
 #endif
 
-#if ASSERT_PIN(ACTIVITY_LED)
-	// this blinks aprox. once every 1024ms
-	if (!(millis & (0x200 - 1)))
-	{
-		io_toggle_output(ACTIVITY_LED);
-	}
+		// checks any limit or control input state change (every 16ms)
+#if (!defined(FORCE_SOFT_POLLING) && CTRL_SCHED_CHECK >= 0)
+		uint8_t mls = (uint8_t)(0xff & millis);
+		if ((mls & CTRL_SCHED_CHECK_MASK) == CTRL_SCHED_CHECK_VAL)
+		{
+			mcu_limits_changed_cb();
+			mcu_controls_changed_cb();
+		}
 #endif
+#if ASSERT_PIN(ACTIVITY_LED)
+		// this blinks aprox. once every 1024ms
+		if (!(millis & (0x200 - 1)))
+		{
+			io_toggle_output(ACTIVITY_LED);
+		}
+#endif
+		mcu_disable_global_isr();
+		running = false;
+	}
 }
 #endif
 
@@ -770,7 +753,6 @@ void cnc_exec_rt_commands(void)
 			cnc_state.loop_state = LOOP_STARTUP_RESET;
 			return;
 		}
-
 		if (CHECKFLAG(command, RT_CMD_JOG_CANCEL))
 		{
 			while (serial_available())
@@ -781,6 +763,8 @@ void cnc_exec_rt_commands(void)
 					protocol_send_error(STATUS_JOG_CANCELED);
 				}
 			}
+			CLEARFLAG(cnc_state.exec_state, EXEC_RUN);
+
 			return;
 		}
 
@@ -1019,6 +1003,8 @@ bool cnc_check_interlocking(void)
 #endif
 
 	// an hold condition is active and motion as stopped
+	// volatile uint8_t a = cnc_get_exec_state(EXEC_HOLD);
+	// volatile uint8_t bewao = !cnc_get_exec_state(EXEC_RUN);
 	if (cnc_get_exec_state(EXEC_HOLD) && !cnc_get_exec_state(EXEC_RUN))
 	{
 		itp_stop(); // stop motion
@@ -1066,26 +1052,6 @@ static void cnc_io_dotasks(void)
 
 #ifdef ENABLE_MAIN_LOOP_MODULES
 	EVENT_INVOKE(cnc_io_dotasks, NULL);
-#endif
-
-#ifdef ENABLE_STEPPERS_DISABLE_TIMEOUT
-	static uint32_t stepper_timeout = 0;
-
-	if (g_settings.step_disable_timeout)
-	{
-		// is idle check the timeout
-		if (cnc_get_exec_state(EXEC_RUN | EXEC_HOLD) == EXEC_IDLE)
-		{
-			if (stepper_timeout < mcu_millis())
-			{
-				io_enable_steppers(~g_settings.step_enable_invert); // disables steppers after idle timeout
-				stepper_timeout = UINT32_MAX;
-			}
-		}
-		else{
-			stepper_timeout = mcu_millis() + g_settings.step_disable_timeout;
-		}
-	}
 #endif
 }
 

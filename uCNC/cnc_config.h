@@ -45,14 +45,11 @@ extern "C"
 
 	/**
 	 * Choose the board
-	 * Select the boardmap for your board.
-	 * Boardmaps are available at src/hal/boards/
-	 * Or you can create your custom boardmap
-	 * 
+	 * Check boards.h for list of available/supported boards
 	 * */
 
 #ifndef BOARD
-#define BOARD "src/hal/boards/avr/boardmap_uno.h"
+#define BOARD BOARD_UNO
 #endif
 
 // optional name to override default board name build info (if option enabled)
@@ -97,44 +94,54 @@ extern "C"
 
 #define N_ARC_CORRECTION 16
 
-	/**
-	 * Echo received commands.
-	 * Uncomment to enable. Only necessary to debug communication problems
-	 * */
+/**
+ * Echo received commands.
+ * Uncomment to enable. Only necessary to debug communication problems
+ * */
 
-	// #define ECHO_CMD
+// #define ECHO_CMD
 
-	/**
-	 * Debug command parsing time
-	 * Uncomment to enable. This measures the time it takes to execute a command line and place it in the planner
-	 * */
+/**
+ * Debug command parsing time
+ * Uncomment to enable. This measures the time it takes to execute a command line and place it in the planner
+ * */
 
-	// #define ENABLE_PARSING_TIME_DEBUG
+// #define ENABLE_PARSING_TIME_DEBUG
 
-	/**
-	 * Override default configuration settings. Use _PER_AXIS parameters to
-	 * define different settings for each axis.
-	 */
+/**
+ * Override default configuration settings. Use _PER_AXIS parameters to
+ * define different settings for each axis.
+ */
 
-	// #define DEFAULT_DIR_INV_MASK 0
-	// #define DEFAULT_LIMIT_INV_MASK 0
-	// #define DEFAULT_SOFT_LIMITS_ENABLED 0
-	// #define DEFAULT_HARD_LIMITS_ENABLED 0
-	// #define DEFAULT_HOMING_ENABLED 0
-	// #define DEFAULT_HOMING_DIR_INV_MASK 0
-	// #define DEFAULT_HOMING_FAST 50
-	// #define DEFAULT_HOMING_SLOW 10
-	// #define DEFAULT_HOMING_OFFSET 2
-	// #define DEFAULT_STEP_PER_MM 200
-	// #define DEFAULT_STEP_PER_MM_PER_AXIS {200, 200, 200}
-	// #define DEFAULT_MAX_FEED 500
-	// #define DEFAULT_MAX_FEED_PER_AXIS {500, 500, 500}
-	// #define DEFAULT_ACCEL 10
-	// #define DEFAULT_ACCEL_PER_AXIS {10, 10, 10}
-	// #define DEFAULT_MAX_DIST 200
-	// #define DEFAULT_MAX_DIST_PER_AXIS {200, 200, 50}
-	// #define DEFAULT_ARC_TOLERANCE 0.002
-	// #define DEFAULT_DEBOUNCE_MS 250
+// #define DEFAULT_DIR_INV_MASK 0
+#define DEFAULT_LIMIT_INV_MASK 63 // x y z x2 y2 z2
+#define LIMIT_X2_IO_MASK 8
+#define LIMIT_Y2_IO_MASK 16
+#define LIMIT_Z2_IO_MASK 32
+#define DEFAULT_SOFT_LIMITS_ENABLED 1
+#define DEFAULT_HARD_LIMITS_ENABLED 1
+#define DEFAULT_HOMING_ENABLED 1
+// #define DEFAULT_HOMING_DIR_INV_MASK 0
+// #define DEFAULT_HOMING_FAST 50
+// #define DEFAULT_HOMING_SLOW 10
+// #define DEFAULT_HOMING_OFFSET 2
+// #define DEFAULT_STEP_PER_MM 200
+#define DEFAULT_STEP_PER_MM_PER_AXIS \
+	{                                \
+		89, 89, 200                  \
+	}
+// #define DEFAULT_MAX_FEED 500
+// #define DEFAULT_MAX_FEED_PER_AXIS {500, 500, 500}
+// #define DEFAULT_ACCEL 10
+// #define DEFAULT_ACCEL_PER_AXIS {10, 10, 10}
+// #define DEFAULT_MAX_DIST 200
+#define DEFAULT_MAX_DIST_PER_AXIS \
+	{                             \
+		1500, 1000, 600           \
+	}
+// #define DEFAULT_ARC_TOLERANCE 0.002
+// #define DEFAULT_DEBOUNCE_MS 250
+#define DEFAULT_CONTROL_INV_MASK 14
 
 #if defined(KINEMATIC_DELTA)
 	// #define DEFAULT_LIN_DELTA_ARM_LENGTH 230
@@ -288,11 +295,6 @@ extern "C"
 	// #define GCODE_ACCEPT_WORD_E
 
 	/**
-	 * Enables RS274NGC expression parsing
-	 * **/
-	//  #define ENABLE_RS274NGC_EXPRESSIONS
-
-	/**
 	 * Shrink µCNC
 	 * It's possible to shrink µCNC by disable some core features:
 	 *   - arc support (G2,G3,G17,G18,G19)
@@ -357,16 +359,6 @@ extern "C"
  * */
 
 // #define SET_ORIGIN_AT_HOME_POS
-
-/**
- * Enabling this option changes the default, short homing cycle:
- *   Rapid approach -> Slow pull off
- * into a longer and potentially more precise:
- *   Rapid approach -> Rapid pull off -> Slow approach -> Slow pull off
- * This change makes the code size a bit bigger but might make your
- * homing cycle yield more accurate results.
- * */
-// #define ENABLE_LONG_HOMING_CYCLE
 
 /**
  *
@@ -496,17 +488,6 @@ extern "C"
 
 #define S_CURVE_ACCELERATION_LEVEL 0
 
-/**
- * 
- * Enables steppers to go idle after some amount of time not moving.
- * This implements Grbl setting $1
- * Unlike Grbl this accepts a 16bit value so a timeout up 30 seconds can be defined. A value of 0 will disable it.
- * Warning: This can and will cause steppers to loose position.
- * 
- * */
-
-// #define ENABLE_STEPPERS_DISABLE_TIMEOUT
-
 	/**
 	 * Forces pin pooling for all limits and control pins (with or without
 	 * interrupts)
@@ -515,26 +496,19 @@ extern "C"
 	// #define FORCE_SOFT_POLLING
 
 	/**
-	 * Runs a check for state change inside the RTC ISR/task. This is a failsafe
-	 * check monitor the pins in a regular interval. The value sets the frequency of this safety
+	 * Runs a check for state change inside the scheduler. This is a failsafe
+	 * check to pin ISR checking The value sets the frequency of this safety
 	 * check that is executed every 2^(CTRL_SCHED_CHECK) milliseconds. A
 	 * negative value will disable this feature. The maximum is 7
 	 * */
 
 #define CTRL_SCHED_CHECK 4
 
-	/**
-	 * EXPERIMENTAL! Uncomment to enable itp step generation to run inside the RTC ISR/task.
-	 * This ensures ITP starving prevention. Usually this will be executed at the same sample
-	 * rate as the interpolator with an upper bound of 1Khz and a lower bound of 3Hz
-	 * */
-// #define ENABLE_ITP_FEED_TASK
-
 /**
  * Uncomment to invert Emergency stop button
  * */
 #ifndef INVERT_EMERGENCY_STOP
-// #define INVERT_EMERGENCY_STOP
+#define INVERT_EMERGENCY_STOP
 #endif
 
 	/**
@@ -542,7 +516,7 @@ extern "C"
 	 * helps to reduce code size if features are not needed
 	 * */
 #ifndef DISABLE_ALL_CONTROLS
-// #define DISABLE_ALL_CONTROLS
+#define DISABLE_ALL_CONTROLS
 #endif
 #ifndef DISABLE_ALL_LIMITS
 // #define DISABLE_ALL_LIMITS
@@ -551,13 +525,13 @@ extern "C"
 // #define DISABLE_PROBE
 #endif
 
-	/**
-	 *
-	 * Uncomment to store the state of the limits, controls and probe states that tiggered and alarm
-	 * This is useful to debug momentary faults
-	 *
-	 */
-	// #define ENABLE_IO_ALARM_DEBUG
+/**
+ *
+ * Uncomment to store the state of the limits, controls and probe states that tiggered and alarm
+ * This is useful to debug momentary faults
+ *
+ */
+#define ENABLE_IO_ALARM_DEBUG
 
 	/**
 	 * Modifies the startup message to emulate Grbl (required by some programs so

@@ -42,6 +42,9 @@
 #ifndef LASER_PWM_AIR_ASSIST
 #define LASER_PWM_AIR_ASSIST DOUT2
 #endif
+// #ifndef LASER_PWM_TUBE_FLOOD
+// #define LASER_PWM_TUBE_FLOOD DOUT1
+// #endif
 #endif
 
 // this sets the minimum power (laser will never fully turn off during engraving and prevents power up delays)

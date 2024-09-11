@@ -32,6 +32,9 @@
 #ifndef LASER_PPI_AIR_ASSIST
 #define LASER_PPI_AIR_ASSIST DOUT2
 #endif
+// #ifndef LASER_PPI_TUBE_FLOOD
+// #define LASER_PPI_TUBE_FLOOD DOUT1
+// #endif
 #endif
 
 #ifdef ENABLE_LASER_PPI
@@ -232,12 +235,12 @@ CREATE_EVENT_LISTENER(gcode_exec, laser_ppi_mcodes_exec);
 
 DECL_MODULE(laser_ppi)
 {
-	#ifdef ENABLE_PARSER_MODULES
+#ifdef ENABLE_PARSER_MODULES
 	ADD_EVENT_LISTENER(gcode_parse, laser_ppi_mcodes_parse);
 	ADD_EVENT_LISTENER(gcode_exec, laser_ppi_mcodes_exec);
-	#else
-	#warning "Parser extensions are not enabled. M126, M127 and M128 code extensions will not work."
-	#endif
+#else
+#warning "Parser extensions are not enabled. M126, M127 and M128 code extensions will not work."
+#endif
 }
 
 /**
