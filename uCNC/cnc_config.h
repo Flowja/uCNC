@@ -128,8 +128,7 @@ extern "C"
 // #define DEFAULT_STEP_PER_MM 200
 #define DEFAULT_STEP_PER_MM_PER_AXIS \
 	{                                \
-		89, 89, 200                  \
-	}
+		89, 89, 200}
 // #define DEFAULT_MAX_FEED 500
 // #define DEFAULT_MAX_FEED_PER_AXIS {500, 500, 500}
 // #define DEFAULT_ACCEL 10
@@ -137,8 +136,7 @@ extern "C"
 // #define DEFAULT_MAX_DIST 200
 #define DEFAULT_MAX_DIST_PER_AXIS \
 	{                             \
-		1500, 1000, 600           \
-	}
+		1500, 1000, 600}
 // #define DEFAULT_ARC_TOLERANCE 0.002
 // #define DEFAULT_DEBOUNCE_MS 250
 #define DEFAULT_CONTROL_INV_MASK 14

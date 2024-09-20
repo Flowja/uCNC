@@ -396,6 +396,15 @@ MCU_CALLBACK void mcu_rtc_cb(uint32_t millis)
 		io_toggle_output(ACTIVITY_LED);
 	}
 #endif
+#if ASSERT_PIN(STOP_LIGHT)
+    if (cnc_get_exec_state(EXEC_ALARM) || cnc_has_alarm())
+    {
+        if (!(millis & (0x200 - 1)))
+        {
+            io_toggle_output(STOP_LIGHT);
+        }
+    }
+#endif
 }
 #endif
 

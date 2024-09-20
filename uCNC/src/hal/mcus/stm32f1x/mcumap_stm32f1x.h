@@ -4091,6 +4091,9 @@ extern "C"
 #define PWM0_CLOCK HAL_RCC_GetPCLK1Freq()
 #define PWM0_APBEN __helper__(RCC_APB1ENR_TIM, PWM0_TIMER, EN)
 #endif
+#if (PWM0_TIMER == 2 && PWM0_CHANNEL >= 3 && PWM0_PORT == B)
+#define PWM0_REMAP AFIO_MAPR_TIM2_REMAP_PARTIALREMAP2;/* 部分重映射：TIM2_CH3->PB10, TIM2_CH4->PB11 */ 
+#endif 
 #define PWM0_TIMREG (__tim__(PWM0_TIMER))
 #ifndef PWM0_FREQ
 #define PWM0_FREQ 1000

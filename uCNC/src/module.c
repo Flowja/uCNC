@@ -46,7 +46,7 @@ static FORCEINLINE void load_modules(void)
 #endif
 	LOAD_MODULE(sensor_amps);
 	LOAD_MODULE(sensor_temperature);
-	LOAD_MODULE(grblhal_keypad);
+	LOAD_MODULE(joystick);
 	LOAD_MODULE(m42);
 	LOAD_MODULE(button_light);
 

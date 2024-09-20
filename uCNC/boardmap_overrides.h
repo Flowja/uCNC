@@ -19,8 +19,8 @@ extern "C"
 // #define UART_PORT 1
 // #define UART_PORT 2
 #define ITP_TIMER 1
-// #define SERVO_TIMER 3
-#define ONESHOT_TIMER 2
+#define SERVO_TIMER 4
+#define ONESHOT_TIMER 3
 #define STEP0_BIT 0
 #define STEP0_PORT B
 #define STEP1_BIT 1
@@ -131,8 +131,8 @@ extern "C"
 #define IC74HC595_COUNT 0
 
 #define SENSORPIN_AMPS ANALOG0
-#define JOYSTICK_X ANALOG1
-#define JOYSTICK_Y ANALOG2
+#define JOYSTICK_INPUT_0 ANALOG1
+#define JOYSTICK_INPUT_1 ANALOG2
 #define SENSORPIN_T1 ANALOG3
 #define SENSORPIN_T2 ANALOG4
 
@@ -144,6 +144,9 @@ extern "C"
 #define JOYSTICK_Z_DOWN DIN2
 #define WATER_FLOW_SWITCHSENSOR DIN3
 #define JOYSTICK_EN DIN4
+    // #define LASER_FIREONCE_MASK 1
+    // #define JOYSTICK_Z_UP_MASK 2
+    // #define JOYSTICK_Z_DOWN_MASK 4
 
 #define LASER_COOLANT_FLOOD DOUT0
 #define RUN_LIGHT DOUT1

@@ -474,9 +474,9 @@ void mcu_clocks_init()
 	 * If crystal is 16MHz, add in PLLXTPRE flag to prescale by 2
 	 */
 	RCC->CFGR = (uint32_t)(RCC_CFGR_HPRE_DIV1 |
-												 APB1_PRESC | APB2_PRESC |
-												 RCC_CFGR_PLLSRC |
-												 (PLL_MUL << RCC_CFGR_PLLMULL_Pos));
+						   APB1_PRESC | APB2_PRESC |
+						   RCC_CFGR_PLLSRC |
+						   (PLL_MUL << RCC_CFGR_PLLMULL_Pos));
 	/* Enable PLL */
 	RCC->CR |= RCC_CR_PLLON;
 	/* Wait till PLL is ready */
@@ -703,10 +703,10 @@ void mcu_init(void)
 	AFIO->MAPR |= SPI_REMAP;
 #endif
 	// initialize the SPI configuration register
-	SPI_REG->CR1 = SPI_CR1_SSM		 // software slave management enabled
-								 | SPI_CR1_SSI	 // internal slave select
-								 | SPI_CR1_MSTR; // SPI master mode
-																 //    | (SPI_SPEED << 3) | SPI_MODE;
+	SPI_REG->CR1 = SPI_CR1_SSM	   // software slave management enabled
+				   | SPI_CR1_SSI   // internal slave select
+				   | SPI_CR1_MSTR; // SPI master mode
+								   //    | (SPI_SPEED << 3) | SPI_MODE;
 	spi_config_t spi_conf = {0};
 	spi_conf.mode = SPI_MODE;
 	mcu_spi_config(spi_conf, SPI_FREQ);
@@ -731,10 +731,10 @@ void mcu_init(void)
 	AFIO->MAPR |= SPI2_REMAP;
 #endif
 	// initialize the SPI2 configuration register
-	SPI2_REG->CR1 = SPI_CR1_SSM			// software slave management enabled
-									| SPI_CR1_SSI		// internal slave select
-									| SPI_CR1_MSTR; // SPI2 master mode
-																	//    | (SPI2_SPEED << 3) | SPI2_MODE;
+	SPI2_REG->CR1 = SPI_CR1_SSM		// software slave management enabled
+					| SPI_CR1_SSI	// internal slave select
+					| SPI_CR1_MSTR; // SPI2 master mode
+									//    | (SPI2_SPEED << 3) | SPI2_MODE;
 	spi_config_t spi2_conf = {0};
 	spi2_conf.mode = SPI2_MODE;
 	mcu_spi2_config(spi2_conf, SPI2_FREQ);
@@ -749,6 +749,11 @@ void mcu_init(void)
 
 #ifdef MCU_HAS_I2C
 	mcu_i2c_config(I2C_FREQ);
+#endif
+
+#ifdef PWM0_REMAP
+	RCC->APB2ENR |= RCC_APB2ENR_AFIOEN; /* 开启AFIO时钟 */
+	AFIO->MAPR |= PWM0_REMAP;			/* 部分重映射：TIM2_CH3->PB10, TIM2_CH4->PB11 */
 #endif
 
 	mcu_disable_probe_isr();
@@ -973,7 +978,7 @@ static void mcu_eeprom_erase(uint16_t address)
 		FLASH->KEYR = 0x45670123;
 		FLASH->KEYR = 0xCDEF89AB;
 	}
-	FLASH->CR = 0;						 // Ensure PG bit is low
+	FLASH->CR = 0;			   // Ensure PG bit is low
 	FLASH->CR |= FLASH_CR_PER; // set the PER bit
 	FLASH->AR = (FLASH_EEPROM + address);
 	FLASH->CR |= FLASH_CR_STRT; // set the start bit
@@ -1030,7 +1035,7 @@ void mcu_eeprom_flush()
 				protocol_send_error(42); // STATUS_SETTING_WRITE_FAIL
 			if (FLASH->SR & FLASH_SR_WRPRTERR)
 				protocol_send_error(43); // STATUS_SETTING_PROTECTED_FAIL
-			FLASH->CR = 0;						 // Ensure PG bit is low
+			FLASH->CR = 0;				 // Ensure PG bit is low
 			FLASH->SR = 0;
 			eeprom++;
 			ptr++;
@@ -1178,7 +1183,7 @@ bool mcu_spi_bulk_transfer(const uint8_t *tx_data, uint8_t *rx_data, uint16_t da
 	{
 		// Wait for transfers to complete
 		if (!(SPI_DMA_CONTROLLER->ISR >> (SPI_DMA_TX_IFR_POS + 5)) ||
-				(!(SPI_DMA_CONTROLLER->ISR >> (SPI_DMA_RX_IFR_POS + 5)) && rx_data))
+			(!(SPI_DMA_CONTROLLER->ISR >> (SPI_DMA_RX_IFR_POS + 5)) && rx_data))
 			return true;
 
 		// SPI hardware still transmitting the last byte
@@ -1217,9 +1222,9 @@ bool mcu_spi_bulk_transfer(const uint8_t *tx_data, uint8_t *rx_data, uint16_t da
 	SPI_DMA_CONTROLLER->IFCR |= SPI_DMA_TX_IFCR_MASK;
 
 	SPI_DMA_TX_CHANNEL->CCR =
-			(0b01 << DMA_CCR_PL_Pos) | // Priority medium
-			DMA_CCR_MINC |						 // Increment memory
-			DMA_CCR_DIR;							 // Memory to peripheral
+		(0b01 << DMA_CCR_PL_Pos) | // Priority medium
+		DMA_CCR_MINC |			   // Increment memory
+		DMA_CCR_DIR;			   // Memory to peripheral
 
 	SPI_DMA_TX_CHANNEL->CPAR = (uint32_t)&SPI_REG->DR;
 	SPI_DMA_TX_CHANNEL->CMAR = (uint32_t)tx_data;
@@ -1237,8 +1242,8 @@ bool mcu_spi_bulk_transfer(const uint8_t *tx_data, uint8_t *rx_data, uint16_t da
 		SPI_DMA_CONTROLLER->IFCR |= SPI_DMA_RX_IFCR_MASK;
 
 		SPI_DMA_RX_CHANNEL->CCR =
-				(0b01 << DMA_CCR_PL_Pos) | // Priority medium
-				DMA_CCR_MINC;							 // Increment memory
+			(0b01 << DMA_CCR_PL_Pos) | // Priority medium
+			DMA_CCR_MINC;			   // Increment memory
 
 		SPI_DMA_RX_CHANNEL->CPAR = (uint32_t)&SPI_REG->DR;
 		SPI_DMA_RX_CHANNEL->CMAR = (uint32_t)rx_data;
@@ -1392,7 +1397,7 @@ bool mcu_spi2_bulk_transfer(const uint8_t *tx_data, uint8_t *rx_data, uint16_t d
 	{
 		// Wait for transfers to complete
 		if (!(SPI2_DMA_CONTROLLER->ISR >> (SPI2_DMA_TX_IFR_POS + 5)) ||
-				(!(SPI2_DMA_CONTROLLER->ISR >> (SPI2_DMA_RX_IFR_POS + 5)) && rx_data))
+			(!(SPI2_DMA_CONTROLLER->ISR >> (SPI2_DMA_RX_IFR_POS + 5)) && rx_data))
 			return true;
 
 		// SPI hardware still transmitting the last byte
@@ -1431,9 +1436,9 @@ bool mcu_spi2_bulk_transfer(const uint8_t *tx_data, uint8_t *rx_data, uint16_t d
 	SPI2_DMA_CONTROLLER->IFCR |= SPI2_DMA_TX_IFCR_MASK;
 
 	SPI2_DMA_TX_CHANNEL->CCR =
-			(0b01 << DMA_CCR_PL_Pos) | // Priority medium
-			DMA_CCR_MINC |						 // Increment memory
-			DMA_CCR_DIR;							 // Memory to peripheral
+		(0b01 << DMA_CCR_PL_Pos) | // Priority medium
+		DMA_CCR_MINC |			   // Increment memory
+		DMA_CCR_DIR;			   // Memory to peripheral
 
 	SPI2_DMA_TX_CHANNEL->CPAR = (uint32_t)&SPI2_REG->DR;
 	SPI2_DMA_TX_CHANNEL->CMAR = (uint32_t)tx_data;
@@ -1451,8 +1456,8 @@ bool mcu_spi2_bulk_transfer(const uint8_t *tx_data, uint8_t *rx_data, uint16_t d
 		SPI2_DMA_CONTROLLER->IFCR |= SPI2_DMA_RX_IFCR_MASK;
 
 		SPI2_DMA_RX_CHANNEL->CCR =
-				(0b01 << DMA_CCR_PL_Pos) | // Priority medium
-				DMA_CCR_MINC;							 // Increment memory
+			(0b01 << DMA_CCR_PL_Pos) | // Priority medium
+			DMA_CCR_MINC;			   // Increment memory
 
 		SPI2_DMA_RX_CHANNEL->CPAR = (uint32_t)&SPI2_REG->DR;
 		SPI2_DMA_RX_CHANNEL->CMAR = (uint32_t)rx_data;
