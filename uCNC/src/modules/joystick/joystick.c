@@ -50,7 +50,7 @@ static const char joystick_axis_map[JOYSTICK_AXIS_COUNT] = {
 	JOYSTICK_MAP_AXIS(JOYSTICK_INPUT_5_AXIS),
 #endif
 };
-
+static uint8_t joystickEnable = 0;
 extern float joystick_virtual_input_0(void);
 extern float joystick_virtual_input_1(void);
 // extern float joystick_virtual_input_2(void);
@@ -369,8 +369,60 @@ static FORCEINLINE void joystick_update()
 #endif
 }
 
+#if !defined(ENABLE_PARSER_MODULES)
+#error "Tone speaker requires the parser modules to be enabled"
+#endif // !defined(ENABLE_PARSER_MODULES)
+
+#define M300 EXTENDED_MCODE(300)
+
+bool joystickEN_mcode_parser(void *args)
+{
+	gcode_parse_args_t *gargs = (gcode_parse_args_t *)args;
+	if (gargs->word == 'M' && gargs->value == 300)
+	{
+		if (gargs->cmd->group_extended != 0)
+		{
+			*(gargs->error) = STATUS_GCODE_MODAL_GROUP_VIOLATION;
+			return EVENT_HANDLED;
+		}
+
+		gargs->cmd->group_extended = M300;
+		*(gargs->error) = STATUS_OK;
+		// Consume the event
+		return EVENT_HANDLED;
+	}
+	return EVENT_CONTINUE;
+}
+
+bool joystickEN_mcode_executor(void *args)
+{
+	gcode_exec_args_t *gargs = (gcode_exec_args_t *)args;
+	if (gargs->cmd->group_extended == M300)
+	{
+		// uint16_t joystickNumber = gargs->words->p;
+		uint16_t joystickEn = gargs->words->s;
+
+		if (joystickEn)
+		{
+			joystickEnable = 1;
+		}
+		else
+			joystickEnable = 0;
+
+		*(gargs->error) = STATUS_OK;
+		return EVENT_HANDLED;
+	}
+
+	return EVENT_CONTINUE;
+}
+
+CREATE_EVENT_LISTENER(gcode_parse, joystickEN_mcode_parser);
+CREATE_EVENT_LISTENER(gcode_exec, joystickEN_mcode_executor);
+
 static bool joystick_dotasks(void *arg)
 {
+	if (!joystickEnable)
+		return EVENT_CONTINUE;
 	// To keep the planner buffer filled we update at twice the delta time frequency.
 	if (mcu_millis() - joystick_last_update < (JOYSTICK_DELTA_TIME_MS / 2))
 		return EVENT_CONTINUE;
@@ -396,6 +448,11 @@ DECL_MODULE(joystick)
 #else
 #warning "Main loop extensions are not enabled, joystick module will not function properly!"
 #endif
+
+#if defined(ENABLE_PARSER_MODULES)
+	ADD_EVENT_LISTENER(gcode_parse, joystickEN_mcode_parser);
+	ADD_EVENT_LISTENER(gcode_exec, joystickEN_mcode_executor);
+#endif // defined(ENABLE_PARSER_MODULES)
 }
 
 #endif
