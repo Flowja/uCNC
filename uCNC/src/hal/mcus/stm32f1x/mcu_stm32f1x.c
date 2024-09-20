@@ -831,7 +831,7 @@ void mcu_freq_to_clocks(float frequency, uint16_t *ticks, uint16_t *prescaller)
 		totalticks >>= 1;
 	}
 
-	*prescaller--;
+	(*prescaller) -= 1;
 	*ticks = (uint16_t)totalticks;
 }
 
@@ -1111,11 +1111,9 @@ void mcu_spi_config(spi_config_t config, uint32_t frequency)
 uint8_t mcu_spi_xmit(uint8_t c)
 {
 	SPI_REG->DR = c;
-	while (!(SPI_REG->SR & SPI_SR_TXE) && !(SPI_REG->SR & SPI_SR_RXNE))
+	while (!(SPI_REG->SR & SPI_SR_TXE) || (SPI_REG->SR & SPI_SR_BSY))
 		;
 	uint8_t data = SPI_REG->DR;
-	while (SPI_REG->SR & SPI_SR_BSY)
-		;
 	spi_port_state = SPI_IDLE;
 	return data;
 }
@@ -1325,11 +1323,9 @@ void mcu_spi2_config(spi_config_t config, uint32_t frequency)
 uint8_t mcu_spi2_xmit(uint8_t c)
 {
 	SPI2_REG->DR = c;
-	while (!(SPI2_REG->SR & SPI_SR_TXE) && !(SPI2_REG->SR & SPI_SR_RXNE))
+	while (!(SPI2_REG->SR & SPI_SR_TXE) || (SPI2_REG->SR & SPI_SR_BSY))
 		;
 	uint8_t data = SPI2_REG->DR;
-	while (SPI2_REG->SR & SPI_SR_BSY)
-		;
 	spi2_port_state = SPI_IDLE;
 	return data;
 }
