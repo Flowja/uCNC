@@ -19,6 +19,8 @@ extern "C"
 #define LIMIT_X2_PULLUP_ENABLE
 #define LIMIT_Y2_PULLUP_ENABLE
 #define LIMIT_Z2_PULLUP_ENABLE
+// #define DISABLE_ALL_LIMITS
+// #define DISABLE_ALL_CONTROLS
 #define DISABLE_PROBE
 #define TOOL1 laser_pwm
 #define LASER_PWM PWM0

@@ -121,22 +121,22 @@ extern "C"
 #define DEFAULT_SOFT_LIMITS_ENABLED 1
 #define DEFAULT_HARD_LIMITS_ENABLED 1
 #define DEFAULT_HOMING_ENABLED 1
-// #define DEFAULT_HOMING_DIR_INV_MASK 0
-// #define DEFAULT_HOMING_FAST 50
-// #define DEFAULT_HOMING_SLOW 10
+#define DEFAULT_HOMING_DIR_INV_MASK 4
+#define DEFAULT_HOMING_FAST 500
+#define DEFAULT_HOMING_SLOW 200
 // #define DEFAULT_HOMING_OFFSET 2
 // #define DEFAULT_STEP_PER_MM 200
 #define DEFAULT_STEP_PER_MM_PER_AXIS \
 	{                                \
-		89, 89, 200}
+		711, 711, 6400}
 // #define DEFAULT_MAX_FEED 500
-// #define DEFAULT_MAX_FEED_PER_AXIS {500, 500, 500}
+#define DEFAULT_MAX_FEED_PER_AXIS {1500, 1500, 500}
 // #define DEFAULT_ACCEL 10
-// #define DEFAULT_ACCEL_PER_AXIS {10, 10, 10}
+#define DEFAULT_ACCEL_PER_AXIS {10, 10, 1}
 // #define DEFAULT_MAX_DIST 200
 #define DEFAULT_MAX_DIST_PER_AXIS \
 	{                             \
-		1500, 1000, 600}
+		1500, 880, 600}
 // #define DEFAULT_ARC_TOLERANCE 0.002
 // #define DEFAULT_DEBOUNCE_MS 250
 #define DEFAULT_CONTROL_INV_MASK 14
@@ -506,7 +506,7 @@ extern "C"
  * Uncomment to invert Emergency stop button
  * */
 #ifndef INVERT_EMERGENCY_STOP
-#define INVERT_EMERGENCY_STOP
+// #define INVERT_EMERGENCY_STOP
 #endif
 
 	/**
