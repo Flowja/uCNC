@@ -3,7 +3,7 @@
 https://github.com/Egoruch/NTC-STM32-HAL
 https://aterlux.ru/article/ntcresistor-en
 
-/* Table of ADC sum value, corresponding to temperature. Starting from higher value to lower.
+ Table of ADC sum value, corresponding to temperature. Starting from higher value to lower.
    Next parameters had been used to build table:
      R1(T1): 50kOhm(25°С)
      R2(T2): 3.2334kOhm(100°С)

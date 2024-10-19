@@ -959,9 +959,7 @@ uint8_t mcu_eeprom_getc(uint16_t address)
 {
 	if (NVM_STORAGE_SIZE <= address)
 	{
-		DEBUG_STR("EEPROM invalid address @ ");
-		DEBUG_INT(address);
-		DEBUG_PUTC('\n');
+		DBGMSG("EEPROM invalid address @ %u", address);
 		return 0;
 	}
 	uint16_t offset = mcu_access_flash_page(address);
@@ -991,9 +989,7 @@ void mcu_eeprom_putc(uint16_t address, uint8_t value)
 {
 	if (NVM_STORAGE_SIZE <= address)
 	{
-		DEBUG_STR("EEPROM invalid address @ ");
-		DEBUG_INT(address);
-		DEBUG_PUTC('\n');
+		DBGMSG("EEPROM invalid address @ %u", address);
 	}
 
 	uint16_t offset = mcu_access_flash_page(address);
@@ -1032,10 +1028,10 @@ void mcu_eeprom_flush()
 				; // wait while busy
 			mcu_enable_global_isr();
 			if (FLASH->SR & FLASH_SR_PGERR)
-				protocol_send_error(42); // STATUS_SETTING_WRITE_FAIL
+				proto_error(42); // STATUS_SETTING_WRITE_FAIL
 			if (FLASH->SR & FLASH_SR_WRPRTERR)
-				protocol_send_error(43); // STATUS_SETTING_PROTECTED_FAIL
-			FLASH->CR = 0;				 // Ensure PG bit is low
+				proto_error(43); // STATUS_SETTING_PROTECTED_FAIL
+			FLASH->CR = 0;		 // Ensure PG bit is low
 			FLASH->SR = 0;
 			eeprom++;
 			ptr++;
