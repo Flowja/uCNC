@@ -80,6 +80,7 @@ static void set_speed(int16_t value)
 #if ASSERT_PIN(LASER_PWM)
 	io_set_pwm(LASER_PWM, (uint8_t)ABS(value));
 #endif
+if (value>0) cnc_call_rt_command(RT_CMD_COOL_FLD_TOGGLE);
 }
 
 static int16_t range_speed(int16_t value, uint8_t conv)
