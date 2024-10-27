@@ -151,7 +151,7 @@ extern "C"
 #define LASER_COOLANT_FLOOD DOUT0
 #define RUN_LIGHT DOUT1
 #define STOP_LIGHT DOUT3
-    // #define LASER_AIR_ASSIT DOUT2          /*defined in laser_pwm.c and laser_ppi.c*/
+#define LASER_PWM_AIR_ASSIST DOUT2     
     // #define SPEAKER_PWM PWM0
     // Custom configurations
 

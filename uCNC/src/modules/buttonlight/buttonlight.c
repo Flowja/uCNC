@@ -41,17 +41,19 @@ bool buttonLight(void *args)
     //     }
     // }
     // else
-    if (cnc_get_exec_state(EXEC_RUN | EXEC_JOG | EXEC_HOMING))
+    if (!cnc_has_alarm())
     {
-        io_set_output(RUN_LIGHT);
-        io_clear_output(STOP_LIGHT);
+        if ((cnc_get_exec_state(EXEC_ALLACTIVE) == EXEC_IDLE)||cnc_get_exec_state(EXEC_HOLD))
+        {
+            io_set_output(STOP_LIGHT);
+            io_clear_output(RUN_LIGHT);
+        }
+        else
+        {
+            io_set_output(RUN_LIGHT);
+            io_clear_output(STOP_LIGHT);
+        }
     }
-    else
-    {
-        io_set_output(STOP_LIGHT);
-        io_clear_output(RUN_LIGHT);
-    }
-
     return EVENT_CONTINUE;
 }
 CREATE_EVENT_LISTENER(cnc_dotasks, buttonLight);
