@@ -126,7 +126,7 @@ extern "C"
 #define DEFAULT_HARD_LIMITS_ENABLED 1
 #define DEFAULT_HOMING_ENABLED 1
 #define DEFAULT_HOMING_DIR_INV_MASK 6
-#define DEFAULT_HOMING_FAST 500
+#define DEFAULT_HOMING_FAST 1000
 #define DEFAULT_HOMING_SLOW 200
 // #define DEFAULT_HOMING_OFFSET 2
 // #define DEFAULT_STEP_PER_MM 200
@@ -134,9 +134,9 @@ extern "C"
 	{                                \
 		711, 711, 6400}
 // #define DEFAULT_MAX_FEED 500
-#define DEFAULT_MAX_FEED_PER_AXIS {2000, 2000, 500}
+#define DEFAULT_MAX_FEED_PER_AXIS {10000, 10000, 500}
 // #define DEFAULT_ACCEL 10
-#define DEFAULT_ACCEL_PER_AXIS {10, 10, 1}
+#define DEFAULT_ACCEL_PER_AXIS {500, 500, 1}
 // #define DEFAULT_MAX_DIST 200
 #define DEFAULT_MAX_DIST_PER_AXIS \
 	{                             \
