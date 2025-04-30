@@ -249,8 +249,8 @@ WEAK_EVENT_HANDLER(proto_gcode_modes)
  * all other implementations can use the formated print helper
  */
 
-#define proto_itoa(value) prt_int((void*)proto_putc, PRINT_CALLBACK, (uint32_t)(value), 0)
-#define proto_ftoa(value) prt_flt((void*)proto_putc, PRINT_CALLBACK, (float)(value), ((!g_settings.report_inches) ? 3 : 5))
+#define proto_itoa(value) prt_int((void *)proto_putc, PRINT_CALLBACK, (uint32_t)(value), 0)
+#define proto_ftoa(value) prt_flt((void *)proto_putc, PRINT_CALLBACK, (float)(value), ((!g_settings.report_inches) ? 3 : 5))
 
 void proto_puts(const char *str)
 {
@@ -307,7 +307,7 @@ void proto_feedback_fmt(const char *fmt, ...)
 	va_start(args, fmt);
 	grbl_stream_start_broadcast();
 	proto_putc('[');
-	prt_fmtva((void*)grbl_stream_putc, PRINT_CALLBACK, fmt, &args);
+	prt_fmtva((void *)grbl_stream_putc, PRINT_CALLBACK, fmt, &args);
 	proto_print(MSG_FEEDBACK_END);
 	va_end(args);
 }
@@ -357,7 +357,7 @@ static FORCEINLINE void proto_status_tail(void)
 		uint16_t feed;
 		uint16_t spindle;
 
-		parser_get_modes(modalgroups, &feed, &spindle);
+		parser_get_modes(modalgroups, &feed, &spindle); // call rt cmmand not modify this modal groups
 		if (modalgroups[8] != 5 || modalgroups[9])
 		{
 			proto_print(MSG_STATUS_TOOL);
@@ -824,11 +824,11 @@ void proto_cnc_settings(void)
 				proto_gcode_setting_line_int(s.id, val);
 				break;
 			case 2:
-				val = (uint32_t) * ((uint8_t *)s.memptr);
+				val = (uint32_t)*((uint8_t *)s.memptr);
 				proto_gcode_setting_line_int(s.id, val);
 				break;
 			case 3:
-				val = (uint32_t) * ((uint16_t *)s.memptr);
+				val = (uint32_t)*((uint16_t *)s.memptr);
 				proto_gcode_setting_line_int(s.id, val);
 				break;
 			default:
@@ -1031,7 +1031,7 @@ void proto_pins_states(void)
 #endif
 
 #define DSS_INFO "DSS" STRGIFY(DSS_MAX_OVERSAMPLING) "_" STRGIFY(DSS_CUTOFF_FREQ) ","
-#define PLANNER_INFO           \
+#define PLANNER_INFO             \
 	STRGIFY(PLANNER_BUFFER_SIZE) \
 	","
 

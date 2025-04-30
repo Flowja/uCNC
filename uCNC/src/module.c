@@ -44,11 +44,11 @@ static FORCEINLINE void load_modules(void)
 #ifdef LOAD_MODULES_OVERRIDE
 	LOAD_MODULES_OVERRIDE();
 #endif
-	LOAD_MODULE(sensor_amps);
-	LOAD_MODULE(sensor_temperature);
-	LOAD_MODULE(joystick);
-	LOAD_MODULE(m42);
-	LOAD_MODULE(button_light);
+	// LOAD_MODULE(sensor_amps);
+	// LOAD_MODULE(sensor_temperature);
+	// LOAD_MODULE(joystick);
+	// LOAD_MODULE(m42);
+	// LOAD_MODULE(button_light);
 
 	// LOAD_MODULE(tone_speaker);
 }

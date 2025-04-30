@@ -18,7 +18,7 @@ float t2 = 0;
 static volatile uint8_t t_turn = 0;
 // uint32_t timestamp ;
 volatile uint32_t nextsample = 0;
-static volatile uint8_t coolant_flood_started;
+// static volatile uint8_t coolant_flood_started;
 static State currentState = STATE_READING;
 bool getTemp(void *args)
 {
@@ -97,26 +97,29 @@ bool getTemp(void *args)
         nextsample = mcu_millis() + 1000UL;
         currentState = STATE_READING; // 切换回数据读取状态
     }
-
-    if (t2 >= 35)
+    int16_t val = io_get_pinvalue(LASER_COOLANT_FLOOD);
+    if (t2 >= 35 && !val)
     {
-        if (!io_get_output(LASER_COOLANT_FLOOD))
-        {
-            io_set_output(LASER_COOLANT_FLOOD);
-            coolant_flood_started = 1;
-        }
+        // if (!io_get_output(LASER_COOLANT_FLOOD))
+        // {
+        //     io_set_output(LASER_COOLANT_FLOOD);
+        //     coolant_flood_started = 1;
+        // }
+        cnc_call_rt_command(CMD_CODE_COOL_FLD_TOGGLE);
     }
-    if (coolant_flood_started && t2 <= 30)
+    if (val && t2 <= 30)
     {
-        if (io_get_output(LASER_COOLANT_FLOOD))
-        {
-            io_clear_output(LASER_COOLANT_FLOOD);
-            coolant_flood_started = 0;
-        }
+        // if (io_get_output(LASER_COOLANT_FLOOD))
+        // {
+        //     io_clear_output(LASER_COOLANT_FLOOD);
+        //     coolant_flood_started = 0;
+        // }
+        cnc_call_rt_command(CMD_CODE_COOL_FLD_TOGGLE);
+        // coolant_flood_started = 0;
     }
     if (t2 >= 38)
     {
-        if (tool_get_setpoint() != 0)
+        if (tool_get_speed() != 0)
         {
             /*Alarm*/
             cnc_alarm(EXEC_ALARM_LASER_OVER_TEMPERATURE);
@@ -126,13 +129,13 @@ bool getTemp(void *args)
     return EVENT_CONTINUE;
 }
 CREATE_EVENT_LISTENER(cnc_dotasks, getTemp);
-
+#define proto_ftoa(value) prt_flt((void *)proto_putc, PRINT_CALLBACK, (float)(value), 1)
 bool grblhal_temp_send_status(void *args)
 {
     protocol_send_string("T1:");
-    serial_print_flt(t1);
+    proto_ftoa(t1);
     protocol_send_string("T2:");
-    serial_print_flt(t2);
+    proto_ftoa(t2);
 
     return EVENT_CONTINUE;
 }

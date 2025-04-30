@@ -31,6 +31,16 @@ bool buttonLight(void *args)
         else
             debounce = mcu_millis();
     }
+    int16_t val = io_get_pinvalue(LASER_PWM_AIR_ASSIST);
+    if (tool_get_speed() > 100 && !val)
+    {
+        cnc_call_rt_command(CMD_CODE_COOL_MST_TOGGLE);
+    }
+    else if (tool_get_speed() <= 100 && val)
+    {
+        cnc_call_rt_command(CMD_CODE_COOL_MST_TOGGLE);
+    }
+
     // static uint32_t debounce = 0;
     // if (cnc_get_exec_state(EXEC_ALARM) || cnc_has_alarm())
     // {
@@ -43,7 +53,7 @@ bool buttonLight(void *args)
     // else
     if (!cnc_has_alarm())
     {
-        if ((cnc_get_exec_state(EXEC_ALLACTIVE) == EXEC_IDLE)||cnc_get_exec_state(EXEC_HOLD))
+        if ((cnc_get_exec_state(EXEC_ALLACTIVE) == EXEC_IDLE) || cnc_get_exec_state(EXEC_HOLD))
         {
             io_set_output(STOP_LIGHT);
             io_clear_output(RUN_LIGHT);

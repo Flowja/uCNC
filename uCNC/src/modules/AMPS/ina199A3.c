@@ -29,12 +29,12 @@ bool getmAMP(void *args)
 }
 
 CREATE_EVENT_LISTENER(cnc_dotasks, getmAMP);
-
+#define proto_ftoa(value) prt_flt((void *)proto_putc, PRINT_CALLBACK, (float)(value), 2)
 bool grblhal_sensor_send_status(void *args)
 {
     // protocol_send_string(__romstr__("MSG:"));
     protocol_send_string(__romstr__("AMP:"));
-    serial_print_int(aa);
+    proto_ftoa(aa);
 
     return EVENT_CONTINUE;
 }
