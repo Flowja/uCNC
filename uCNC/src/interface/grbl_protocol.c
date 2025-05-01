@@ -356,8 +356,12 @@ static FORCEINLINE void proto_status_tail(void)
 		uint8_t modalgroups[MAX_MODAL_GROUPS];
 		uint16_t feed;
 		uint16_t spindle;
+		uint8_t coolant;
 
-		parser_get_modes(modalgroups, &feed, &spindle); // call rt cmmand not modify this modal groups
+		parser_get_modes(modalgroups, &feed, &spindle);
+		// BY FLOW: call rt cmmand and ASCII realtime command not modify this modal groups
+		// so use this founction
+		coolant = planner_get_coolant();
 		if (modalgroups[8] != 5 || modalgroups[9])
 		{
 			proto_print(MSG_STATUS_TOOL);
@@ -370,12 +374,14 @@ static FORCEINLINE void proto_status_tail(void)
 				proto_putc('C');
 			}
 #ifdef ENABLE_COOLANT
-			if (CHECKFLAG(modalgroups[9], COOLANT_MASK))
+			// if (CHECKFLAG(modalgroups[9], COOLANT_MASK))
+			if (CHECKFLAG(coolant, COOLANT_MASK))
 			{
 				proto_putc('F');
 			}
 #ifndef M7_SAME_AS_M8
-			if (CHECKFLAG(modalgroups[9], MIST_MASK))
+			// if (CHECKFLAG(modalgroups[9], MIST_MASK))
+			if (CHECKFLAG(coolant, MIST_MASK))
 			{
 				proto_putc('M');
 			}
