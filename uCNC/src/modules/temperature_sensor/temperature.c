@@ -107,7 +107,7 @@ bool getTemp(void *args)
         // }
         cnc_call_rt_command(CMD_CODE_COOL_FLD_TOGGLE);
     }
-    if (val && t2 <= 30)
+    if (val && t2 <= 15)
     {
         // if (io_get_output(LASER_COOLANT_FLOOD))
         // {

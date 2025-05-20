@@ -357,14 +357,17 @@ static FORCEINLINE void proto_status_tail(void)
 		uint16_t feed;
 		uint16_t spindle;
 		uint8_t coolant;
+		bool flowsensor;
 
 		parser_get_modes(modalgroups, &feed, &spindle);
 		// BY FLOW: call rt cmmand and ASCII realtime command not modify this modal groups
 		// so use this founction
 		coolant = planner_get_coolant();
-		if (modalgroups[8] != 5 || modalgroups[9])
+		flowsensor = io_get_input(WATER_FLOW_SWITCHSENSOR);
+		proto_print(MSG_STATUS_TOOL);
+		if (modalgroups[8] != 5)
 		{
-			proto_print(MSG_STATUS_TOOL);
+			// proto_print(MSG_STATUS_TOOL);
 			if (modalgroups[8] == 3)
 			{
 				proto_putc('S');
@@ -373,6 +376,9 @@ static FORCEINLINE void proto_status_tail(void)
 			{
 				proto_putc('C');
 			}
+		}
+		if (modalgroups[9] || coolant)
+		{
 #ifdef ENABLE_COOLANT
 			// if (CHECKFLAG(modalgroups[9], COOLANT_MASK))
 			if (CHECKFLAG(coolant, COOLANT_MASK))
@@ -387,6 +393,10 @@ static FORCEINLINE void proto_status_tail(void)
 			}
 #endif
 #endif
+		}
+		if (!flowsensor)
+		{
+			proto_putc('W');
 		}
 		return;
 	}
