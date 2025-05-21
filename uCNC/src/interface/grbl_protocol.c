@@ -562,12 +562,34 @@ void proto_status(void)
 			proto_putc('P');
 		}
 
-		if (CHECKFLAG(limits, LINACT0_LIMIT_MASK))
+// 		if (CHECKFLAG(limits, LINACT0_LIMIT_MASK))
+// 		{
+// 			proto_putc('X');
+// 		}
+
+// 		if (CHECKFLAG(limits, LINACT1_LIMIT_MASK))
+// 		{
+// #if ((AXIS_COUNT == 2) && defined(USE_Y_AS_Z_ALIAS))
+// 			proto_putc('Z');
+// #else
+// 			proto_putc('Y');
+// #endif
+// 		}
+
+// 		if (CHECKFLAG(limits, LINACT2_LIMIT_MASK))
+// 		{
+// 			proto_putc('Z');
+// 		}
+		if (CHECKFLAG(limits, LIMIT_X_IO_MASK))
 		{
 			proto_putc('X');
 		}
+		if (CHECKFLAG(limits, LIMIT_X2_IO_MASK))
+		{
+			proto_print("X2");
+		}
 
-		if (CHECKFLAG(limits, LINACT1_LIMIT_MASK))
+		if (CHECKFLAG(limits, LIMIT_Y_IO_MASK))
 		{
 #if ((AXIS_COUNT == 2) && defined(USE_Y_AS_Z_ALIAS))
 			proto_putc('Z');
@@ -575,10 +597,18 @@ void proto_status(void)
 			proto_putc('Y');
 #endif
 		}
+		if (CHECKFLAG(limits, LIMIT_Y2_IO_MASK))
+		{
+			proto_print("Y2");
+		}
 
-		if (CHECKFLAG(limits, LINACT2_LIMIT_MASK))
+		if (CHECKFLAG(limits, LIMIT_Z_IO_MASK))
 		{
 			proto_putc('Z');
+		}
+		if (CHECKFLAG(limits, LIMIT_Z2_IO_MASK))
+		{
+			proto_print("Z2");
 		}
 
 		if (CHECKFLAG(limits, LINACT3_LIMIT_MASK))
