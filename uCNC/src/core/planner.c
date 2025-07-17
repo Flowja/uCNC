@@ -499,7 +499,7 @@ void planner_sync_tools(motion_data_t *block_data)
 {
 #if TOOL_COUNT > 0
 	g_planner_state.spindle_speed = block_data->spindle;
-	g_planner_state.state_flags.reg &= ~TOOL_STATE_COPY_FLAG_MASK;
+	g_planner_state.state_flags.reg &= ~TOOL_STATE_COPY_FLAG_MASK; // reg bit 7 feed_override 6 optimal 5 synced 43 spindle_running 21 coolant 0 not used or backlash_comp.This operation keep bit 8 and bit2,1,0
 	g_planner_state.state_flags.reg |= (block_data->motion_flags.reg & TOOL_STATE_COPY_FLAG_MASK);
 #endif
 }

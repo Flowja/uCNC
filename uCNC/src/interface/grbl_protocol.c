@@ -361,6 +361,10 @@ static FORCEINLINE void proto_status_tail(void)
 
 		parser_get_modes(modalgroups, &feed, &spindle);
 		// BY FLOW: call rt cmmand and ASCII realtime command not modify this modal groups
+		/*mcu.c lien938, mcu_com_rx_cb function
+		com rx ASCII realtime command->cnc.c cnc_call_rt_command->cnc_exec_rt_command line 880 planner_coolant_ovr_toggle(COOLANT_MASK)
+		->interpolator line745 tool_set_coolant(planner_get_coolant()); struct tool_t define all tools struct. In each tool set_coolant set the pin.
+		Also in cnc.c cnc_exec_rt_command use mc_update_tools to sync with planner but not update coolant state feed_override and coolant state */
 		// so use this founction
 		coolant = planner_get_coolant();
 		flowsensor = io_get_input(WATER_FLOW_SWITCHSENSOR);
@@ -562,24 +566,24 @@ void proto_status(void)
 			proto_putc('P');
 		}
 
-// 		if (CHECKFLAG(limits, LINACT0_LIMIT_MASK))
-// 		{
-// 			proto_putc('X');
-// 		}
+		// 		if (CHECKFLAG(limits, LINACT0_LIMIT_MASK))
+		// 		{
+		// 			proto_putc('X');
+		// 		}
 
-// 		if (CHECKFLAG(limits, LINACT1_LIMIT_MASK))
-// 		{
-// #if ((AXIS_COUNT == 2) && defined(USE_Y_AS_Z_ALIAS))
-// 			proto_putc('Z');
-// #else
-// 			proto_putc('Y');
-// #endif
-// 		}
+		// 		if (CHECKFLAG(limits, LINACT1_LIMIT_MASK))
+		// 		{
+		// #if ((AXIS_COUNT == 2) && defined(USE_Y_AS_Z_ALIAS))
+		// 			proto_putc('Z');
+		// #else
+		// 			proto_putc('Y');
+		// #endif
+		// 		}
 
-// 		if (CHECKFLAG(limits, LINACT2_LIMIT_MASK))
-// 		{
-// 			proto_putc('Z');
-// 		}
+		// 		if (CHECKFLAG(limits, LINACT2_LIMIT_MASK))
+		// 		{
+		// 			proto_putc('Z');
+		// 		}
 		if (CHECKFLAG(limits, LIMIT_X_IO_MASK))
 		{
 			proto_putc('X');
