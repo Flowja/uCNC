@@ -32,13 +32,23 @@ bool buttonLight(void *args)
             debounce = mcu_millis();
     }
     int16_t val = io_get_pinvalue(LASER_PWM_AIR_ASSIST);
-    if (tool_get_speed() > 100 && !val)
+    int16_t speed = tool_get_speed();
+    static bool auto_on = false;
+    if (speed > 1 && !auto_on)
     {
-        cnc_call_rt_command(CMD_CODE_COOL_MST_TOGGLE);
+        if (!val)
+        {
+            cnc_call_rt_command(CMD_CODE_COOL_MST_TOGGLE);
+        }
+        auto_on = true;
     }
-    else if (tool_get_speed() <= 100 && val)
+    else if (speed <= 1 && auto_on)
     {
-        cnc_call_rt_command(CMD_CODE_COOL_MST_TOGGLE);
+        if (val)
+        {
+            cnc_call_rt_command(CMD_CODE_COOL_MST_TOGGLE);
+        }
+        auto_on = false;
     }
 
     // static uint32_t debounce = 0;
