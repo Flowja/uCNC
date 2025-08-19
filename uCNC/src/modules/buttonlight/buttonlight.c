@@ -34,6 +34,8 @@ bool buttonLight(void *args)
     int16_t val = io_get_pinvalue(LASER_PWM_AIR_ASSIST);
     int16_t speed = tool_get_speed();
     static bool auto_on = false;
+    static uint32_t off_delay = 0;
+    static bool first_in = false;
     if (speed > 1 && !auto_on)
     {
         if (!val)
@@ -44,11 +46,21 @@ bool buttonLight(void *args)
     }
     else if (speed <= 1 && auto_on)
     {
-        if (val)
+        if (!first_in)
         {
-            cnc_call_rt_command(CMD_CODE_COOL_MST_TOGGLE);
+            off_delay = mcu_millis();
+            first_in = true;
         }
-        auto_on = false;
+
+        if (mcu_millis() - off_delay > 2000)
+        {
+            if (val)
+            {
+                cnc_call_rt_command(CMD_CODE_COOL_MST_TOGGLE);
+            }
+            auto_on = false;
+            first_in = false;
+        }
     }
 
     // static uint32_t debounce = 0;
